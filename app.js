@@ -11,6 +11,7 @@ let lastSign;
 let currentResult = 0;
 let reg = /\d+\.*\d*/g;
 let numbers;
+let result;
 
 //what happen when number is clicked
 numberBtns.forEach(function(btn) {
@@ -24,13 +25,11 @@ operatorBtns.forEach(function(btn)  {
     btn.addEventListener('click', function(){
     //extract numbers
         numbers = currentOp.textContent.match(reg);
-        console.log(numbers);
         for(let i = 0; i < numbers.length; i++) {
             numbers[i] = parseFloat(numbers[i]);
         }
-        console.log(numbers)
-    ///////////////
-    if(!sign) {
+    ////////////////////
+    if(!sign && currentOp.textContent[currentOp.textContent.length - 1] != equalsBtn.textContent) {
         currentOp.textContent += btn.textContent;
         sign = true;
         signCount++;
@@ -41,22 +40,18 @@ operatorBtns.forEach(function(btn)  {
             case 'x':
                 currentResult = numbers[0] * numbers[1];
                 previousOp.textContent = currentResult;
-                console.log(currentResult);
                 break;
             case '/':
                 currentResult = numbers[0] / numbers[1];
                 previousOp.textContent = currentResult;
-                console.log(currentResult);
                 break;
             case '-':
                 currentResult = numbers[0] - numbers[1];
                 previousOp.textContent = currentResult;
-                console.log(currentResult);
                 break;
             case '+':
                 currentResult = numbers[0] + numbers[1];
                 previousOp.textContent = currentResult;
-                console.log(currentResult);
                 break;
         }
     } else if (signCount > 2) {
@@ -64,22 +59,18 @@ operatorBtns.forEach(function(btn)  {
             case 'x':
                 currentResult = currentResult * numbers[numbers.length - 1];
                 previousOp.textContent = currentResult;
-                console.log(currentResult);
                 break;
             case '/':
                 currentResult = currentResult / numbers[numbers.length - 1];
                 previousOp.textContent = currentResult;
-                console.log(currentResult);
                 break;
             case '-':
                 currentResult = currentResult - numbers[numbers.length - 1];
                 previousOp.textContent = currentResult;
-                console.log(currentResult);
                 break;
             case '+':
                 currentResult = currentResult + numbers[numbers.length - 1];
                 previousOp.textContent = currentResult;
-                console.log(currentResult);
                 break;
         }
     }           
@@ -97,7 +88,7 @@ clearBtn.addEventListener('click', function() {
 })
 
 deleteBtn.addEventListener('click', function() {
-    if(!sign) {
+    if(!sign && currentOp.textContent[currentOp.textContent.length - 1] != lastSign) {
         currentOp.textContent = currentOp.textContent
                                         .split('')
                                         .slice(0, currentOp.textContent.length - 1)
@@ -107,9 +98,60 @@ deleteBtn.addEventListener('click', function() {
 })
 
 equalsBtn.addEventListener('click', function() {
-        previousOp.textContent = '';
-        currentOp.textContent = currentResult;
+    if(currentOp.textContent[currentOp.textContent.length - 1] != equalsBtn.textContent &&
+       currentOp.textContent.length > 2 && 
+       currentOp.textContent[currentOp.textContent.length - 1] != lastSign){
+
+        previousOp.textContent = currentResult;
+        currentOp.textContent += equalsBtn.textContent;
+        numbers = currentOp.textContent.match(reg);
+        for(let i = 0; i < numbers.length; i++) {
+            numbers[i] = parseFloat(numbers[i]);
+        }
+
+        if(signCount == 1) {
+            switch(lastSign) {
+                case 'x':
+                    result = numbers[0] * numbers[1];
+                    previousOp.textContent = result;
+                    break;
+                case '/':
+                    result = numbers[0] / numbers[1];
+                    previousOp.textContent = result;
+                    break;
+                case '-':
+                    result = numbers[0] - numbers[1];
+                    previousOp.textContent = result;
+                    break;
+                case '+':
+                    result = numbers[0] + numbers[1];
+                    previousOp.textContent = result;
+                    break;
+            }
+        } else if(signCount > 1) {
+            switch(lastSign) {
+                case 'x':
+                    result = currentResult * numbers[numbers.length - 1];
+                    previousOp.textContent = result;
+                    break;
+                case '/':
+                    result = currentResult / numbers[numbers.length - 1];
+                    previousOp.textContent = result;
+                    break;
+                case '-':
+                    result = currentResult - numbers[numbers.length - 1];
+                    previousOp.textContent = result;
+                    break;
+                case '+':
+                    result = currentResult + numbers[numbers.length - 1];
+                    previousOp.textContent = result;
+                    break;
+            }
+        } 
+    }
+    
 })
 
+//add keybind events
 
-//need to add decimals
+//step by step - SbS
