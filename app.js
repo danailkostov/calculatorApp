@@ -1,155 +1,108 @@
+class Calculator {
+    constructor(previousDisplayText, currentDisplayText) {
+        this.previousDisplayText = previousDisplayText;
+        this.currentDisplayText = currentDisplayText;
+        this.clear();
+    }
+
+    clear() {
+        this.currentDisplay = '';
+        this.previousDisplay = '';
+        this.operation = undefined;
+    }
+
+    delete() {
+        this.currentDisplay = this.currentDisplay.slice(0, -1);
+    }
+
+    assignOperation(operator) {
+        if(this.currentDisplay === '') return;
+        if(this.previousDisplay !== '') {
+            this.computation();
+        }
+        this.operation = operator;
+        this.previousDisplay = `${this.currentDisplay} ${operator}`;
+        this.currentDisplay = '';
+    }
+
+    clickNumber(number) {
+        if(number === '.' && this.currentDisplay.includes('.')) return;
+        this.currentDisplay += number;
+    }
+
+    computation() {
+        let computation;
+        let previousNum = parseFloat(this.previousDisplay);
+        let currentNum = parseFloat(this.currentDisplay);
+        if(isNaN(currentNum) || isNaN(previousNum)) return;
+        switch(this.operation) {
+            case '+':
+                computation = previousNum + currentNum;
+                break;
+            case '/':
+                computation = previousNum / currentNum;
+                break;
+            case 'x':
+                computation = previousNum * currentNum;
+                break;
+            case '-':
+                computation = previousNum - currentNum;
+                break;
+            default:
+                return;
+        }
+        this.currentDisplay = computation;
+        this.operation = undefined;
+        this.previousDisplay = '';
+    }
+
+    decimalNumber(number) {
+        return number;
+    }
+
+    updateDisplay() {
+        this.currentDisplayText.innerText = this.currentDisplay;
+        this.previousDisplayText.innerText = this.previousDisplay;
+    }
+}
+
 const numberBtns = document.querySelectorAll(".numbers");
 const operatorBtns = document.querySelectorAll('.operators');
 const equalsBtn = document.querySelector('.equals');
 const deleteBtn = document.querySelector('.delete');
 const clearBtn = document.querySelector('.clear');
-const previousOp = document.querySelector('.previous-operand');
-const currentOp = document.querySelector('.current-operand');
-let sign = false;
-let signCount = 0;
-let lastSign;
-let currentResult = 0;
-let reg = /\d+\.*\d*/g;
-let numbers;
-let result;
+const previousDisplayText = document.querySelector('.previous-operand');
+const currentDisplayText = document.querySelector('.current-operand');
 
-//what happen when number is clicked
-numberBtns.forEach(function(btn) {
+const calculator = new Calculator(previousDisplayText, currentDisplayText);
+
+numberBtns.forEach(function(btn){
     btn.addEventListener('click', function(){
-        currentOp.textContent += btn.textContent;
-        sign = false;
+        calculator.clickNumber(btn.innerText);
+        calculator.updateDisplay();
     })
 })
-//what happens when operator sign is clicked
-operatorBtns.forEach(function(btn)  {
+
+operatorBtns.forEach(function(btn){
     btn.addEventListener('click', function(){
-    //extract numbers
-        numbers = currentOp.textContent.match(reg);
-        for(let i = 0; i < numbers.length; i++) {
-            numbers[i] = parseFloat(numbers[i]);
-        }
-    ////////////////////
-    if(!sign && currentOp.textContent[currentOp.textContent.length - 1] != equalsBtn.textContent) {
-        currentOp.textContent += btn.textContent;
-        sign = true;
-        signCount++;
-    }
-    
-    if(signCount > 1 && signCount < 3) {
-        switch(lastSign) {
-            case 'x':
-                currentResult = numbers[0] * numbers[1];
-                previousOp.textContent = currentResult;
-                break;
-            case '/':
-                currentResult = numbers[0] / numbers[1];
-                previousOp.textContent = currentResult;
-                break;
-            case '-':
-                currentResult = numbers[0] - numbers[1];
-                previousOp.textContent = currentResult;
-                break;
-            case '+':
-                currentResult = numbers[0] + numbers[1];
-                previousOp.textContent = currentResult;
-                break;
-        }
-    } else if (signCount > 2) {
-        switch(lastSign) {
-            case 'x':
-                currentResult = currentResult * numbers[numbers.length - 1];
-                previousOp.textContent = currentResult;
-                break;
-            case '/':
-                currentResult = currentResult / numbers[numbers.length - 1];
-                previousOp.textContent = currentResult;
-                break;
-            case '-':
-                currentResult = currentResult - numbers[numbers.length - 1];
-                previousOp.textContent = currentResult;
-                break;
-            case '+':
-                currentResult = currentResult + numbers[numbers.length - 1];
-                previousOp.textContent = currentResult;
-                break;
-        }
-    }           
-    // last sign
-    lastSign = btn.textContent;
+        calculator.assignOperation(btn.innerText);
+        calculator.updateDisplay();
     })
 })
-////////////////////////
-clearBtn.addEventListener('click', function() {
-        previousOp.textContent = '';
-        currentOp.textContent = '';
-        currentResult = 0;
-        signCount = 0;
-        
+
+equalsBtn.addEventListener('click', function(){
+    calculator.computation();
+    calculator.updateDisplay();
 })
 
-deleteBtn.addEventListener('click', function() {
-    if(!sign && currentOp.textContent[currentOp.textContent.length - 1] != lastSign) {
-        currentOp.textContent = currentOp.textContent
-                                        .split('')
-                                        .slice(0, currentOp.textContent.length - 1)
-                                        .join('');
-    }
-    
+clearBtn.addEventListener('click', function(){
+    calculator.clear();
+    calculator.updateDisplay();
 })
 
-equalsBtn.addEventListener('click', function() {
-    if(currentOp.textContent[currentOp.textContent.length - 1] != equalsBtn.textContent &&
-       currentOp.textContent.length > 2 && 
-       currentOp.textContent[currentOp.textContent.length - 1] != lastSign){
-
-        previousOp.textContent = currentResult;
-        currentOp.textContent += equalsBtn.textContent;
-        numbers = currentOp.textContent.match(reg);
-        for(let i = 0; i < numbers.length; i++) {
-            numbers[i] = parseFloat(numbers[i]);
-        }
-
-        if(signCount == 1) {
-            switch(lastSign) {
-                case 'x':
-                    result = numbers[0] * numbers[1];
-                    previousOp.textContent = result;
-                    break;
-                case '/':
-                    result = numbers[0] / numbers[1];
-                    previousOp.textContent = result;
-                    break;
-                case '-':
-                    result = numbers[0] - numbers[1];
-                    previousOp.textContent = result;
-                    break;
-                case '+':
-                    result = numbers[0] + numbers[1];
-                    previousOp.textContent = result;
-                    break;
-            }
-        } else if(signCount > 1) {
-            switch(lastSign) {
-                case 'x':
-                    result = currentResult * numbers[numbers.length - 1];
-                    previousOp.textContent = result;
-                    break;
-                case '/':
-                    result = currentResult / numbers[numbers.length - 1];
-                    previousOp.textContent = result;
-                    break;
-                case '-':
-                    result = currentResult - numbers[numbers.length - 1];
-                    previousOp.textContent = result;
-                    break;
-                case '+':
-                    result = currentResult + numbers[numbers.length - 1];
-                    previousOp.textContent = result;
-                    break;
-            }
-        } 
-    }
-    
+deleteBtn.addEventListener('click', function(){
+    calculator.delete();
+    calculator.updateDisplay();
 })
 
 //add keybind events
